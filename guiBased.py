@@ -11,6 +11,7 @@ import random
 from pygame.locals import *
 import time
 import sys
+import os
 
 from gui.constants import *
 from gui.variables import *
@@ -23,6 +24,15 @@ pygame.init()
 #pygame.font.init()
 screen = pygame.display.set_mode((Twidth, Theight))
 
+
+def resource_path(relative_path):
+    """ Get absolute path to resource"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 def PlayerMove():
     global BOARD_CONTENT
@@ -48,8 +58,9 @@ def run_game_loop():
     global BOARD_CONTENT
     global GAME_SONG
     global Music
+    gamSong = resource_path(GAME_SONG[0])
     if Music:
-        pygame.mixer.music.load(GAME_SONG[0])
+        pygame.mixer.music.load(gamSong)
         pygame.mixer.music.play(-1)
 
     while gameIsPlaying:

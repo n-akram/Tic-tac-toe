@@ -10,7 +10,19 @@ from gui.engine import isSpaceFree
 from gui.engine import makeMove
 import winsound
 import pygame
+#import time
+import sys
+import os
 import time
+
+def resource_path(relative_path):
+    """ Get absolute path to resource"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 def getCurentThemedObject():
     global THEME
@@ -19,7 +31,8 @@ def getCurentThemedObject():
     global ICON_O
     t = THEME[0]
     #t = 0
-    return(BACKGROUND[t], ICON_X[t], ICON_O[t])
+    return(resource_path(BACKGROUND[t])
+        , resource_path(ICON_X[t]), resource_path(ICON_O[t]))
 
 def drawTiles(screen):
     global BLUEish
@@ -219,8 +232,9 @@ def displayEnd(STATUS, screen, winner):
         textsurface = myfont.render(STATUS, False, CYAN)
     else:
         textsurface = myfont.render(STATUS, False, RED)
+    gameSong = resource_path(WIN_LOSE[winner-1])
     if Music:
-            pygame.mixer.music.load(WIN_LOSE[winner-1])
+            pygame.mixer.music.load(gameSong)
             pygame.mixer.music.play(0)
     screen.blit(textsurface,(50,250))
     myfont = pygame.font.SysFont('Comic Sans MS', 15)
@@ -244,8 +258,10 @@ def WelcomeAnimation(screen):
     con_msg = "Click anywhere to continue......."
     screen.fill(WHITE)
     color_line = (49, 150, 100)
+    menuSong = resource_path(MENU_SONG[0])
+    #time.sleep(3)
     if Music:
-        pygame.mixer.music.load(MENU_SONG[0])
+        pygame.mixer.music.load(menuSong)
         pygame.mixer.music.play(-1)
     # start logo animation
     line_length = 1

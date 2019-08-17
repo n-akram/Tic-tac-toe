@@ -3,3 +3,4 @@ pygame
 cython
 py2exe
 pyinstaller
+pypiwin32

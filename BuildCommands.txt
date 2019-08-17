@@ -5,3 +5,7 @@ pyinstaller .\console.py --onefile
 ### building for windowed #############
 
 pyinstaller .\window.py --onefile
+
+### building for gui.based ä###########
+
+pyinstaller -D -F --clean --win-private-assemblies --add-data ".\objects\;.\objects\" .\guiBased.py

@@ -9,13 +9,24 @@ import pygame
 import time
 import winsound
 import sys
+import os
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 def drawBkg(screen):
     global THEME
     global BACKGROUND
     global BG_IMAGE
     t = THEME[0]
-    bg = BACKGROUND[t]
+    bg = resource_path(BACKGROUND[t])
     bg = pygame.image.load(bg)
     BG_IMAGE = pygame.transform.scale(bg, (Twidth, Theight))
     screen.blit(BG_IMAGE, (0,0))
@@ -161,7 +172,7 @@ def updateTheme():
     global Theight
     global Iwidth
     global Iheight
-    bg, i_x, i_o = BACKGROUND[THEME[0]], ICON_X[THEME[0]], ICON_O[THEME[0]]
+    bg, i_x, i_o = resource_path(BACKGROUND[THEME[0]]), resource_path(ICON_X[THEME[0]]), resource_path(ICON_O[THEME[0]])
     bg = pygame.image.load(bg)
     BG_IMAGE = pygame.transform.scale(bg, (Twidth, Theight))
     o = pygame.image.load(i_o)
@@ -183,8 +194,9 @@ def toggleMusic():
     global Music
     global MENU_SONG
     Music = not(Music)
+    menuSong = resource_path(MENU_SONG[0])
     if Music:
-        pygame.mixer.music.load(MENU_SONG[0])
+        pygame.mixer.music.load(menuSong)
         pygame.mixer.music.play(-1)
     else:
         pygame.mixer.music.stop()
@@ -203,8 +215,9 @@ def displayCredits():
     global BLACK_HIGHLIGHT
     global MENU_SONG
     global Music
+    menuSong = resource_path(MENU_SONG[1])
     if Music:
-        pygame.mixer.music.load(MENU_SONG[1])
+        pygame.mixer.music.load(menuSong)
         pygame.mixer.music.play(-1)
     color_line = (49, 150, 100)
     screen = pygame.display.get_surface()
@@ -267,8 +280,9 @@ def menuLoop():
 def displayMenu(): 
     global MENU_SONG
     global Music
+    menuSong = resource_path(MENU_SONG[0])
     if Music:
-        pygame.mixer.music.load(MENU_SONG[0])
+        pygame.mixer.music.load(menuSong)
         pygame.mixer.music.play(-1)
     drawMenu()
     menuLoop()
