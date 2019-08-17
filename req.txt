@@ -1,2 +1,5 @@
 pattern-observer
 pygame
+cython
+py2exe
+pyinstaller

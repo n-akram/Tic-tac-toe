@@ -1,0 +1,7 @@
+### building for console. #############
+
+pyinstaller .\console.py --onefile
+
+### building for windowed #############
+
+pyinstaller .\window.py --onefile
