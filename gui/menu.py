@@ -6,20 +6,13 @@ Date: 04.08.2019
 from gui.variables import *
 from gui.constants import *
 import pygame
+import pygameMenu
 import time
 import winsound
 import sys
 import os
 
-
-def resource_path(relative_path):
-    """ Get absolute path to resource"""
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
+LASTBox = -1
 
 def drawBkg(screen):
     global THEME
@@ -30,6 +23,46 @@ def drawBkg(screen):
     bg = pygame.image.load(bg)
     BG_IMAGE = pygame.transform.scale(bg, (Twidth, Theight))
     screen.blit(BG_IMAGE, (0,0))
+    
+def main_background():
+    global THEME
+    global BACKGROUND
+    global BG_IMAGE
+    screen = pygame.display.get_surface()
+    t = THEME[0]
+    bg = resource_path(BACKGROUND[t])
+    bg = pygame.image.load(bg)
+    BG_IMAGE = pygame.transform.scale(bg, (Twidth, Theight))
+    screen.blit(BG_IMAGE, (0,0))
+
+surface = pygame.display.set_mode((Twidth, Theight))
+pygame.font.init()
+main_menu = pygameMenu.Menu(surface,
+        bgfun=main_background,
+        color_selected=COLOR_WHITE,
+        font=pygameMenu.font.FONT_BEBAS,
+        font_color=COLOR_CYAN,
+        font_size=30,
+        menu_alpha=100,
+        menu_color=MENU_BACKGROUND_COLOR,
+        menu_height=20,
+        menu_width=400,
+        onclose=pygameMenu.events.DISABLE_CLOSE,
+        option_shadow=True,
+        title='Main menu',
+        window_height=420,
+        window_width=400
+        )
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 def drawMenu():
     global GREENish
@@ -77,9 +110,15 @@ def checkMouseInBox(box, mousex, mousey):
     
 def updateReq(mousex, mousey):
     global MENU_BOXES
+    global LASTBox
+    i = 0
     for box in MENU_BOXES:
-        if checkMouseInBox(box, mousex, mousey):
+        if checkMouseInBox(box, mousex, mousey) and LASTBox != i:
+            print(LASTBox, i)
+            LASTBox = i
             return True
+        i += 1
+    LASTBox = -1
     return False
 
 def redrawBgd(screen):
@@ -135,18 +174,44 @@ def menuCheckCursor():
     global background_colour
     global MENU_OPTIONS
     bx_nr = None
-    if updateReq(mousex, mousey):
+    upd = updateReq(mousex, mousey)
+    global LASTBox
+    if upd:
         i = 0
         inBox = False
         screen = pygame.display.get_surface()
         screen.fill(background_colour)
         redrawBgd(screen)
-        for box in MENU_BOXES:
-            if checkMouseInBox(box, mousex, mousey):
-                inBox = True
-                bx_nr = i
-                highlightBox(screen, i)
-            i += 1
+        if LASTBox != -1:
+            inBox = True
+            bx_nr = LASTBox
+            highlightBox(screen, LASTBox)
+            print("Highlighting : ", LASTBox, mousex, mousey, upd)
+        if (inBox) and pygame.mouse.get_pressed()[0]:
+            print("MENU option ", MENU_OPTIONS[bx_nr], " is selected." )
+        else:
+            bx_nr = None
+    return(bx_nr)
+
+def updateBoxSelect():
+    mousex, mousey = pygame.mouse.get_pos()
+    global MENU_BOXES
+    global background_colour
+    global MENU_OPTIONS
+    bx_nr = None
+    upd = updateReq(mousex, mousey)
+    screen = pygame.display.get_surface()
+    #screen.fill(background_colour)
+    global LASTBox
+    if upd:
+        i = 0
+        inBox = False
+        redrawBgd(screen)
+        if LASTBox != -1:
+            inBox = True
+            bx_nr = LASTBox
+            highlightBox(screen, LASTBox)
+            print("Highlighting : ", LASTBox, mousex, mousey, upd)
         if (inBox) and pygame.mouse.get_pressed()[0]:
             print("MENU option ", MENU_OPTIONS[bx_nr], " is selected." )
         else:
@@ -253,29 +318,62 @@ def displayCredits():
     pygame.display.update()
 
 def menuLoop():
+    global background_colour
+    screen = pygame.display.get_surface()
+    screen.fill(background_colour)
+    redrawBgd(screen)
+    global LASTBox
     while True:
         event = pygame.event.wait()
-        op_selected = menuCheckCursor()
-        if(op_selected != None):
-            if event.type == pygame.QUIT or op_selected == 6:
+        updateBoxSelect()
+        op_selected = LASTBox
+        #op_selected = menuCheckCursor()
+        #print(event)
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        #'''
+            if(op_selected != -1):
+                if event.type == pygame.QUIT or op_selected == 6:
+                    pygame.quit()           # Be interpreter friendly
+                    sys.exit()
+                if op_selected == 1:
+                    togglePlayerChar()
+                if op_selected == 2:
+                    ChangeTheme()
+                if op_selected == 3:
+                    toggleMusic()
+                if op_selected == 4:
+                    toggleSound()
+                if op_selected == 5:
+                    displayCredits()
+                if op_selected == 0:
+                    return True
+            elif op_selected == -1 and event.type == pygame.QUIT:
                 pygame.quit()           # Be interpreter friendly
                 sys.exit()
-            if op_selected == 1:
-                togglePlayerChar()
-            if op_selected == 2:
-                ChangeTheme()
-            if op_selected == 3:
-                toggleMusic()
-            if op_selected == 4:
-                toggleSound()
-            if op_selected == 5:
-                displayCredits()
-            if op_selected == 0:
-                return True
-        elif op_selected == None and event.type == pygame.QUIT:
-            pygame.quit()           # Be interpreter friendly
-            sys.exit()
-            return False
+                return False
+        #'''
+
+def quit():
+    pygame.quit()           # Be interpreter friendly
+    sys.exit()
+
+def play_menu():
+    print("PLAYYYYYYYYYYYYYYYYYYY GAMEEEEEEEEEEEEEEEEEE.")
+
+def gameSelect():
+    global main_menu
+    global MENU_OPTIONS
+    main_menu.add_option(MENU_OPTIONS[0], play_menu)
+    main_menu.add_option(MENU_OPTIONS[1], togglePlayerChar)
+    main_menu.add_option(MENU_OPTIONS[2], ChangeTheme)
+    main_menu.add_option(MENU_OPTIONS[3], toggleMusic)
+    main_menu.add_option(MENU_OPTIONS[4], toggleSound)
+    main_menu.add_option(MENU_OPTIONS[5], displayCredits)
+    main_menu.add_option(MENU_OPTIONS[6], quit)
+    #main_menu.add_option('Quit', pygameMenu.events.EXIT)
+    while True:
+        event = pygame.event.wait()
+        main_menu.mainloop(event)#, disable_loop=test)
 
 def displayMenu(): 
     global MENU_SONG
@@ -284,5 +382,6 @@ def displayMenu():
     if Music:
         pygame.mixer.music.load(menuSong)
         pygame.mixer.music.play(-1)
-    drawMenu()
-    menuLoop()
+    #drawMenu()
+    #menuLoop()
+    gameSelect()
